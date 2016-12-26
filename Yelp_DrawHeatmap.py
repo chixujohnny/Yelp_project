@@ -66,4 +66,4 @@ def Draw_Heatmap_Demo(z, x, y):
 z, x, y = Load_Data('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.txt', '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Feature.txt')
 Draw_Heatmap_Demo(z, x, y)
 
-print 'ok!'
+print 'ok!',

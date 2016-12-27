@@ -63,6 +63,10 @@ def Draw_Heatmap_Demo(z, x, y):
 #
 #  main
 #
-z, x, y = Load_Data('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.txt', '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Feature.txt')
+Win_Feature_Vector_Path = 'G:\Project\yelp_dataset_challenge_academic_dataset\business_Nightlife\Nightlife_Business_Feature_Vector.txt'
+Mac_Feature_Vector_Path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.txt'
+Win_Feature_Path = 'G:\Project\yelp_dataset_challenge_academic_dataset\business_Nightlife\Nightlife_Feature.txt'
+Mac_Feature_Path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Feature.txt'
+z, x, y = Load_Data(Win_Feature_Vector_Path, Win_Feature_Path)
 Draw_Heatmap_Demo(z, x, y)
 

@@ -154,10 +154,20 @@ def Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID
 
     # 处理 Business_review_dict
     print '处理Business_review_dict'
-    f = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.txt', 'w')
+    f = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.csv', 'w')
     flag = 0
     total = len(BusinessID_review_dict)
     All_Business_Feature_Vector = []
+
+    # 先写入 columns
+    Feature_Columns = ''
+    for i, item in enumerate(Feature):
+        Feature_Columns += item
+        if i != len(Feature)-1:
+            Feature_Columns += ','
+
+    f.write('Business_ID' + Feature_Columns + '\n')
+
     for BusinessID in BusinessID_review_dict:
         Feature_Vector = [0] * len(Feature_Dict)  # 创建一个全零的特征向量
         Business_Review = BusinessID_review_dict[BusinessID]

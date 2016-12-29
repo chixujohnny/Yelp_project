@@ -79,3 +79,13 @@ if 'This is' in a:
 
 a = [1,2,3,1,2]
 print str(a)
+
+
+Feature = []
+lines = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Feature.txt', 'r').readlines()
+for i, item in enumerate(lines):
+    Feature.append(item.replace('\n', '').split(',')[0])
+    if i == 499: # 只取前500个feature
+        break
+
+f = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.csv', 'w')

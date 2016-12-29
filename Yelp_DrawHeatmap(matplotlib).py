@@ -82,10 +82,6 @@ import seaborn as sns
 # ax.set_xticklabels(labels, minor=False)
 # ax.set_yticklabels(nba_sort.index, minor=False)
 #
-# # Set appropriate font and dpi
-# # sns.set(font_scale=1.2)
-# # sns.set_style({"savefig.dpi": 100})
-#
 # # Rotate the labels
 # plt.xticks(rotation=75)
 #
@@ -114,27 +110,70 @@ import seaborn as sns
 
 #--------------------------------------------------#
 
+# # Import data
+# nba = pd.read_csv("http://datasets.flowingdata.com/ppg2008.csv", index_col=0)
+#
+# # Remove index title
+# nba.index.name = ''
+#
+# # Normalize
+# nba_norm = (nba - nba.mean()) / (nba.max() - nba.min())
+#
+# # Relabel columns
+# labels = ['Games', 'Minutes', 'Points', 'Field goals made', 'Field goal attempts', 'Field goal percentage', 'Free throws made',
+#           'Free throws attempts', 'Free throws percentage','Three-pointers made', 'Three-point attempt', 'Three-point percentage',
+#           'Offensive rebounds', 'Defensive rebounds', 'Total rebounds', 'Assists', 'Steals', 'Blocks', 'Turnover', 'Personal foul']
+# nba_norm.columns = labels
+#
+# # Set font and dpi
+# sns.set(font_scale=1.2)
+# sns.set_style({"savefig.dpi": 100})
+#
+# # Draw it
+# ax = sns.heatmap(nba_norm, cmap=plt.cm.Blues, linewidths=0.1)
+#
+# # Set the x-axis labels on the top
+# ax.xaxis.tick_top()
+#
+# # rotate the x-axis labels
+# plt.xticks(rotation=50)
+#
+# # rotete the y-axis labels
+# plt.yticks(rotation=0)
+#
+# # Get figure
+# fig = ax.get_figure()
+#
+# # Specify dimension and show
+# fig.set_size_inches(15, 20)
+# plt.show()
+
+
+#--------------------------------------------------#
+
+#  Draw heatmap -- Nightlife
+
+#--------------------------------------------------#
+
 # Import data
-nba = pd.read_csv("http://datasets.flowingdata.com/ppg2008.csv", index_col=0)
+data_path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.csv'
+data = pd.read_csv(data_path, index_col=0)
 
 # Remove index title
-nba.index.name = ''
+data.index.name = ''
 
 # Normalize
-nba_norm = (nba - nba.mean()) / (nba.max() - nba.min())
+data_norm = (data - data.mean()) / (data.max() - data.min())
 
-# Relabel columns
-labels = ['Games', 'Minutes', 'Points', 'Field goals made', 'Field goal attempts', 'Field goal percentage', 'Free throws made',
-          'Free throws attempts', 'Free throws percentage','Three-pointers made', 'Three-point attempt', 'Three-point percentage',
-          'Offensive rebounds', 'Defensive rebounds', 'Total rebounds', 'Assists', 'Steals', 'Blocks', 'Turnover', 'Personal foul']
-nba_norm.columns = labels
+# Merge business, 100 to 1
+# data_norm.values()
 
 # Set font and dpi
-sns.set(font_scale=1.2)
+sns.set(font_scale=0.5)
 sns.set_style({"savefig.dpi": 100})
 
 # Draw it
-ax = sns.heatmap(nba_norm, cmap=plt.cm.Blues, linewidths=0.1)
+ax = sns.heatmap(data_norm, cmap=plt.cm.Blues, linewidths=0.1)
 
 # Set the x-axis labels on the top
 ax.xaxis.tick_top()
@@ -148,13 +187,8 @@ plt.yticks(rotation=0)
 # Get figure
 fig = ax.get_figure()
 
-# Specify dimension and show
-fig.set_size_inches(15, 20)
+# Show it
 plt.show()
-
-
-
-
 
 
 

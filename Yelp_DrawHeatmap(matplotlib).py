@@ -154,41 +154,42 @@ import seaborn as sns
 #  Draw heatmap -- Nightlife
 
 #--------------------------------------------------#
+def Heatmap_Data_Preprocess(data_path):
 
-# Import data
-data_path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.csv'
-data = pd.read_csv(data_path, index_col=0)
+    # Import data
+    data = pd.read_csv(data_path, index_col=0)
 
-# Remove index title
-data.index.name = ''
+    # Remove index title
+    data.index.name = ''
 
-# Normalize
-data_norm = (data - data.mean()) / (data.max() - data.min())
+    # Normalize
+    data_norm = (data - data.mean()) / (data.max() - data.min())
 
-# Merge business, 100 to 1
-# data_norm.values()
+    # Compress data(every 10 business)
 
-# Set font and dpi
-sns.set(font_scale=0.5)
-sns.set_style({"savefig.dpi": 100})
+def Heatmap_Draw(data_norm):
 
-# Draw it
-ax = sns.heatmap(data_norm, cmap=plt.cm.Blues, linewidths=0.1)
+    # Set font and dpi
+    sns.set(font_scale=0.5)
+    sns.set_style({"savefig.dpi": 100})
 
-# Set the x-axis labels on the top
-ax.xaxis.tick_top()
+    # Draw it
+    ax = sns.heatmap(data_norm, cmap=plt.cm.Blues, linewidths=0.1)
 
-# rotate the x-axis labels
-plt.xticks(rotation=50)
+    # Set the x-axis labels on the top
+    ax.xaxis.tick_top()
 
-# rotete the y-axis labels
-plt.yticks(rotation=0)
+    # rotate the x-axis labels
+    plt.xticks(rotation=50)
 
-# Get figure
-fig = ax.get_figure()
+    # rotete the y-axis labels
+    plt.yticks(rotation=0)
 
-# Show it
-plt.show()
+    # Get figure
+    fig = ax.get_figure()
+
+    # Show it
+    plt.show()
 
 
 

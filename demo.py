@@ -2,6 +2,8 @@
 
 import json
 import chardet
+import numpy as np
+import pandas as pd
 
 #
 #  json 格式的读取
@@ -88,4 +90,19 @@ for i, item in enumerate(lines):
     if i == 499: # 只取前500个feature
         break
 
-f = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.csv', 'w')
+
+df = pd.DataFrame(np.random.randn(6,4), columns=list('ABCD'))
+print df
+print type(df)
+print df.columns # return a list
+df1 = df.loc[:1].sum()
+df2 = df.loc[2:3].sum()
+
+
+
+
+
+
+
+
+

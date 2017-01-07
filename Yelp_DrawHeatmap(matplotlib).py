@@ -158,23 +158,41 @@ def Heatmap_Data_Preprocess(data_path):
 
     # Import data
     data = pd.read_csv(data_path, index_col=0)
-
-    # Remove index title
-    data.index.name = ''
+    columns = data.columns
+    data = np.array(data)
+    data = pd.DataFrame(data, columns=columns)
+    print data
 
     # Normalize
     data_norm = (data - data.mean()) / (data.max() - data.min())
 
     # Compress data(every 10 business)
+    data_compress = data.loc[0: 99].sum().to_frame().T
+    data_len = len(data)
+    i = 0
+    while i <= data_len:
+
+        if i + 10 <= data_len:
+            new_row = data.loc[i: i+99].sum().to_frame().T
+            data_compress = pd.concat([data_compress, new_row], ignore_index=True)
+
+        elif i <= data_len <= i+10:
+            new_row = data.loc[i: data_len-1].sum().to_frame().T
+            data_compress = pd.concat([data_compress, new_row], ignore_index=True)
+
+        i += 100
+
+    return data_compress.iloc[:, :50]
+
 
 def Heatmap_Draw(data_norm):
 
     # Set font and dpi
-    sns.set(font_scale=0.5)
+    sns.set(font_scale=1)
     sns.set_style({"savefig.dpi": 100})
 
     # Draw it
-    ax = sns.heatmap(data_norm, cmap=plt.cm.Blues, linewidths=0.1)
+    ax = sns.heatmap(data_norm, cmap=plt.cm.Reds, linewidths=0.05)
 
     # Set the x-axis labels on the top
     ax.xaxis.tick_top()
@@ -191,6 +209,15 @@ def Heatmap_Draw(data_norm):
     # Show it
     plt.show()
 
+
+
+
+#
+#   main
+#
+
+data_compress = Heatmap_Data_Preprocess('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector_(Norm).csv')
+Heatmap_Draw(data_compress)
 
 
 

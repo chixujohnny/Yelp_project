@@ -90,13 +90,22 @@ for i, item in enumerate(lines):
     if i == 499: # 只取前500个feature
         break
 
-
+# pandas 数据加和
 df = pd.DataFrame(np.random.randn(6,4), columns=list('ABCD'))
 print df
 print type(df)
 print df.columns # return a list
-df1 = df.loc[:1].sum()
-df2 = df.loc[2:3].sum()
+df1 = df.loc[:1].sum().to_frame().T
+df2 = df.loc[2:3].sum().to_frame().T
+print df1
+print df2
+
+
+# pandas 创建空DataFrame
+df_empty = pd.DataFrame(columns=['A', 'B', 'C', 'D'])
+print df_empty
+df = pd.concat([df_empty, df1, df2], ignore_index=True)
+print df
 
 
 

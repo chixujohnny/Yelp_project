@@ -1,10 +1,11 @@
-# conding: utf-8
+# coding: utf-8
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from urllib2 import urlopen
 import seaborn as sns
+from sklearn import preprocessing
 
 #--------------------------------------------------#
 
@@ -151,7 +152,7 @@ import seaborn as sns
 
 #--------------------------------------------------#
 
-#  Draw heatmap -- Nightlife
+#  Draw heatmap
 
 #--------------------------------------------------#
 def Heatmap_Data_Preprocess(data_path):
@@ -161,28 +162,37 @@ def Heatmap_Data_Preprocess(data_path):
     columns = data.columns
     data = np.array(data)
     data = pd.DataFrame(data, columns=columns)
-    print data
 
-    # Normalize
-    data_norm = (data - data.mean()) / (data.max() - data.min())
+    # 数据标准化(旧)
+    # data = (data - data.mean()) / (data.max() - data.min())
 
-    # Compress data(every 10 business)
-    data_compress = data.loc[0: 99].sum().to_frame().T
+    # 数据标准化
+    # data = pd.DataFrame(preprocessing.scale(data, axis=0, with_mean=False, with_std=False), columns=columns)
+
+    # 数据正则化
+    data = pd.DataFrame(preprocessing.normalize(data, norm='l2', axis=1), columns=columns)
+
+    # 压缩数据,压缩至50行
+    row = 50
     data_len = len(data)
+    d1 = data_len / row # 将d1这么多行的数据压缩成一行
+
+    # 重新制作 DataFrame
+    data_compress = data.loc[0: d1].sum().to_frame().T
     i = 0
-    while i <= data_len:
+    while i < 50:
 
-        if i + 10 <= data_len:
-            new_row = data.loc[i: i+99].sum().to_frame().T
+        if i != 49: # 如果 i 没到最后一行的话
+            new_row = data.loc[i*d1: (i+1)*d1].sum().to_frame().T
             data_compress = pd.concat([data_compress, new_row], ignore_index=True)
 
-        elif i <= data_len <= i+10:
-            new_row = data.loc[i: data_len-1].sum().to_frame().T
+        else: # 到了最后一行
+            new_row = data.loc[i*d1: data_len-1].sum().to_frame().T
             data_compress = pd.concat([data_compress, new_row], ignore_index=True)
 
-        i += 100
+        i += 1
 
-    return data_compress.iloc[:, :50]
+    return data_compress.iloc[:, :50] # 暂时选取前50个feature
 
 
 def Heatmap_Draw(data_norm):
@@ -216,9 +226,13 @@ def Heatmap_Draw(data_norm):
 #   main
 #
 
-data_compress = Heatmap_Data_Preprocess('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector_(Norm).csv')
-Heatmap_Draw(data_compress)
+# Business_Feature Heatmap
+# data_compress = Heatmap_Data_Preprocess('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.csv')
+# Heatmap_Draw(data_compress)
 
+# User_Feature Heatmap
+data_compress = Heatmap_Data_Preprocess('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_User_Feature_Vector.csv')
+Heatmap_Draw(data_compress)
 
 
 

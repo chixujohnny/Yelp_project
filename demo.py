@@ -107,6 +107,8 @@ print df_empty
 df = pd.concat([df_empty, df1, df2], ignore_index=True)
 print df
 
+print 51/50
+
 
 
 

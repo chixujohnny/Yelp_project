@@ -42,23 +42,24 @@ def Filter_Feature(tagged_reviews, window):
         return feature
 
     # 数据预处理,把txt放入内存
-    print '数据预处理....'
-    flag = 0
-    total = len(tagged_reviews)
-    for line in tagged_reviews:
-        line = line[23:-1].split('&&')[:-1]
-        for sentence in line:
-            sentence = sentence.split(' ')
-            tagged_sentence = [] # 标注好的每一个句子 [('Excellent','JJ'), ('food','NN'), ('.','.')]
-            for item in sentence[:-1]: # 去掉最后一个多余的成员
-                item = tuple(item.split('//'))
-                if item[1] != '.' and item[1] != ':' and item[1] != ',' and item[1] != '(' and item[1] != ')' and item[1] != "''" and item[1] != '``' and item[1] != '$':
-                    tagged_sentence.append(item)
-            if tagged_sentence != []:
-                tagged_sentences.append(tagged_sentence)
-        flag += 1
-        View_Bar(flag, total)
-    print 'Done!'
+    # print '数据预处理....'
+    # flag = 0
+    # total = len(tagged_reviews)
+    # for line in tagged_reviews:
+    #     line = line[23:-1].split('&&')[:-1]
+    #     for sentence in line:
+    #         sentence = sentence.split(' ')
+    #         tagged_sentence = [] # 标注好的每一个句子 [('Excellent','JJ'), ('food','NN'), ('.','.')]
+    #         for item in sentence[:-1]: # 去掉最后一个多余的成员
+    #             item = tuple(item.split('//'))
+    #             if item[1] != '.' and item[1] != ':' and item[1] != ',' and item[1] != '(' and item[1] != ')' and item[1] != "''" and item[1] != '``' and item[1] != '$':
+    #                 tagged_sentence.append(item)
+    #         if tagged_sentence != []:
+    #             tagged_sentences.append(tagged_sentence)
+    #     flag += 1
+    #     View_Bar(flag, total)
+    # print 'Done!'
+    tagged_sentences = tagged_reviews
 
     # feature挖掘
     print 'feature挖掘....'
@@ -88,13 +89,16 @@ def Filter_Feature(tagged_reviews, window):
             feature_dict[item] += 1
     # 对字典排序,排序完是list嵌套tuple
     feature_dict = sorted(feature_dict.iteritems(), key=lambda asd:asd[1], reverse=True) # 降序排序
-    print feature_dict
 
     # save
-    f = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Feature.txt', 'w')
-    for item in feature_dict:
-        f.write(item[0] + ',' + str(item[1]) + '\n')
-    print('feature词汇保存完毕')
+    # f = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Feature.txt', 'w')
+    # for item in feature_dict:
+    #     f.write(item[0] + ',' + str(item[1]) + '\n')
+
+    for i, item in enumerate(feature_dict):
+        print item[0], str(item[1])
+
+    return feature_dict
 
 
 

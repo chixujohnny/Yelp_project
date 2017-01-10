@@ -55,8 +55,12 @@ def Filter_Business_Category(business_path, filter_category):
             continue
 
     # 写文件
-    for item in filter_business_id:
-        f.write(item + '\n')
+    # for item in filter_business_id:
+    #     f.write(item + '\n')
+
+    print filter_business_id
+
+    return filter_business_id
 
 
 if __name__ == '__main__':
@@ -67,7 +71,7 @@ if __name__ == '__main__':
 
     # 筛选指定category的business
     filter_category = ['Nightlife'] # 要保证所有的类别在business中均有体现
-    Filter_Business_Category(business_path, filter_category)
+    filter_bussiness_id = Filter_Business_Category(business_path, filter_category)
 
 
 

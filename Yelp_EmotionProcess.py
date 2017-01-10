@@ -47,12 +47,11 @@ def Preprocess_Review(review_path): # review 的文件路径
             BusinessID_review_dict[Business_id].append(Review_text)
 
     return UserID_review_dict, BusinessID_review_dict
-    print 'Done!'
 
 #
 #  施加情感权重,并制作矩阵
 #
-def Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID_review_dict):
+def Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID_review_dict, uid_vector_path, bid_vector_path):
     print '施加情感权重....'
 
     Feature_Dict = {}
@@ -128,33 +127,43 @@ def Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID
         return Emotion_Weight
 
     # 处理 UserID_review_dict
-    # print '处理UserID_review_dict'
-    # f = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_User_Feature_Vector.txt', 'w')
-    # flag = 0
-    # total = len(UserID_review_dict)
-    # All_User_Feature_Vector = []
-    # for UserID in UserID_review_dict:
-    #     Feature_Vector = [0] *len(Feature_Dict) # 创建一个全零的特征向量
-    #     User_Review = UserID_review_dict[UserID]
-    #
-    #     for Review in User_Review:
-    #         Word_Tagged = Tagged_Review(Review) # [('Excellent', 'JJ'), ('food', 'NN'), ('.', '.')]
-    #
-    #         for i, Word in enumerate(Word_Tagged):
-    #             if Feature_Dict.has_key(Word[0]) == True: # 这个词是 feature
-    #                 Feature_Index = Feature.index(Word[0])
-    #                 Emotion_Weight = Handle_Emotion_Weight(i, Word_Tagged, Degree_Words, window=5) # 情感权重为正值,只在乎用户是否关注它
-    #                 Feature_Vector[Feature_Index] += Emotion_Weight
-    #     All_User_Feature_Vector.append([UserID, Feature_Vector])
-    #     # 写文件
-    #     f.write(UserID + ', ' + str(Feature_Vector)[1:-1] + '\n')
-    #     flag += 1
-    #     View_Bar(flag, total)
-    # print 'Done!'
+    print '处理UserID_review_dict'
+    f = open(uid_vector_path, 'w')
+    flag = 0
+    total = len(UserID_review_dict)
+    All_User_Feature_Vector = []
+
+    # 先写入 columns
+    Feature_Columns = ''
+    for i, item in enumerate(Feature):
+        Feature_Columns += item
+        if i != len(Feature)-1:
+            Feature_Columns += ','
+
+    f.write('Business_ID,' + Feature_Columns + '\n')
+
+    for UserID in UserID_review_dict:
+        Feature_Vector = [0] *len(Feature_Dict) # 创建一个全零的特征向量
+        User_Review = UserID_review_dict[UserID]
+
+        for Review in User_Review:
+            Word_Tagged = Tagged_Review(Review) # [('Excellent', 'JJ'), ('food', 'NN'), ('.', '.')]
+
+            for i, Word in enumerate(Word_Tagged):
+                if Feature_Dict.has_key(Word[0]) == True: # 这个词是 feature
+                    Feature_Index = Feature.index(Word[0])
+                    Emotion_Weight = Handle_Emotion_Weight(i, Word_Tagged, Degree_Words, window=5) # 情感权重为正值,只在乎用户是否关注它
+                    Feature_Vector[Feature_Index] += Emotion_Weight
+        All_User_Feature_Vector.append([UserID, Feature_Vector])
+        # 写文件
+        f.write(UserID + ', ' + str(Feature_Vector)[1:-1] + '\n')
+        flag += 1
+        View_Bar(flag, total)
+    print 'Done!'
 
     # 处理 Business_review_dict
     print '处理Business_review_dict'
-    f = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Business_Feature_Vector.csv', 'w')
+    f = open(bid_vector_path, 'w')
     flag = 0
     total = len(BusinessID_review_dict)
     All_Business_Feature_Vector = []
@@ -166,7 +175,7 @@ def Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID
         if i != len(Feature)-1:
             Feature_Columns += ','
 
-    f.write('Business_ID' + Feature_Columns + '\n')
+    f.write('Business_ID,' + Feature_Columns + '\n')
 
     for BusinessID in BusinessID_review_dict:
         Feature_Vector = [0] * len(Feature_Dict)  # 创建一个全零的特征向量
@@ -185,6 +194,7 @@ def Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID
         f.write(BusinessID + ', ' + str(Feature_Vector)[1:-1] + '\n')
         flag += 1
         View_Bar(flag, total)
+
     print 'Done!'
 
 
@@ -192,20 +202,20 @@ def Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID
 #  main  #
 #        #
 
-Feature = []
-lines = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Feature.txt', 'r').readlines()
-for i, item in enumerate(lines):
-    Feature.append(item.replace('\n', '').split(',')[0])
-    if i == 499: # 只取前500个feature
-        break
-
-Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()
-for item in Degree_Words:
-    item = item.replace('\n', '')
-
-UserID_review_dict, BusinessID_review_dict = Preprocess_Review('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Review.txt')
-
-Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID_review_dict)
+# Feature = []
+# lines = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Feature.txt', 'r').readlines()
+# for i, item in enumerate(lines):
+#     Feature.append(item.replace('\n', '').split(',')[0])
+#     if i == 499: # 只取前500个feature
+#         break
+#
+# Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()
+# for item in Degree_Words:
+#     item = item.replace('\n', '')
+#
+# UserID_review_dict, BusinessID_review_dict = Preprocess_Review('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/business_Nightlife/Nightlife_Review.txt')
+#
+# Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID_review_dict, vector_path='')
 
 
 

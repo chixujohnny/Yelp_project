@@ -107,7 +107,9 @@ print df_empty
 df = pd.concat([df_empty, df1, df2], ignore_index=True)
 print df
 
-print 51/50
+dict = {'a':[1,2,3], 'b':[4,5,6]}
+for item in dict:
+    print item
 
 
 

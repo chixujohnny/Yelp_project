@@ -15,9 +15,17 @@ import Yelp_EmotionProcess
 ###########################
 def Review_DataStructure_Pd(yelp_review_path, yelp_business_path, review_csv):
 
-    lines = open(yelp_review_path, 'r').readlines()
-    f = open(review_csv, 'w')
+    # 先将 business-category 存到一张哈希表中
+    business_category_dict = {}
+    lines = open(yelp_business_path, 'r').readlines()
+    for line in lines:
+        line_json = json.loads(line)
+        bid = line_json['business_id']
+        category = line_json['category']
+        business_category_dict[bid] = category # {'abc':['Chinese','Restaurant']}
 
+    f = open(review_csv, 'w')
+    lines = open(yelp_review_path, 'r').readlines()
     for line in lines:
         line_json = json.loads(line)
         uid = line_json['user_id'].encode('utf-8')

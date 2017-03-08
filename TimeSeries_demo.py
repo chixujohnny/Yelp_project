@@ -38,7 +38,8 @@ train = [10930,10318,10595,10972,7706,6756,9092,10551,9722,10913,11151,8186,6422
 test = [14722,
 11999,9390,13481,14795,15845,15271,14686,11054,10395]
 
-window = 70# 设置一个滑窗
+window = 50# 设置一个滑窗
+output = []
 
 for round in range(len(test)):
 
@@ -57,6 +58,18 @@ for round in range(len(test)):
     test_X = train[-window:]
     predicted = model.predict(test_X)
     print predicted
+    output.append(predicted)
     train.append(predicted[0])
+
+plt.figure(figsize=(12,8))
+plt.plot(train + test)
+plt.plot(train + output, color='r')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+
 
 

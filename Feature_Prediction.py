@@ -2,6 +2,7 @@
 
 import pandas as pd
 import json
+import matplotlib.pyplot as plt
 
 import Yelp_Filter_business
 import Yelp_Filter_review
@@ -10,9 +11,9 @@ import Yelp_FeatureDig_review
 import Yelp_EmotionProcess
 
 
-###########################
+##############################
 #  更新数据结构(Dataframe格式)  #
-###########################
+##############################
 def Review_DataStructure_Pd(yelp_review_path, yelp_business_path, review_csv):
 
     # 先将 business-category 存到一张哈希表中
@@ -21,10 +22,11 @@ def Review_DataStructure_Pd(yelp_review_path, yelp_business_path, review_csv):
     for line in lines:
         line_json = json.loads(line)
         bid = line_json['business_id']
-        category = line_json['category']
-        business_category_dict[bid] = category # {'abc':['Chinese','Restaurant']}
+        category = line_json['categories']
+        business_category_dict[bid] = category # {'abc':['Chinese','Restaurants']}
 
     f = open(review_csv, 'w')
+    f.write('User_id,' + 'Business_id,' + 'year,' + 'month,' + 'day,' + 'category,' + 'review' + '\n')
     lines = open(yelp_review_path, 'r').readlines()
     for line in lines:
         line_json = json.loads(line)
@@ -33,40 +35,58 @@ def Review_DataStructure_Pd(yelp_review_path, yelp_business_path, review_csv):
         year = line_json['date'].split('-')[0].encode('utf-8')
         month = line_json['date'].split('-')[1].encode('utf-8')
         day = line_json['date'].split('-')[2].encode('utf-8')
+        category = '"' + (','.join(business_category_dict[bid])).encode('utf-8') + '"' # "Chinese,Restuarants"
         review = '"' + line_json['text'].encode('utf-8').replace(('\n' or '\n\n' or ','), '.').replace('"', "'") + '"'
-        f.write(uid + ',' + bid + ',' + year + ',' + month + ',' + day + ',' + review + '\n')
+        f.write(uid + ',' + bid + ',' + year + ',' + month + ',' + day + ',' + category + ',' + review + '\n')
 
     return 0
 
-def GroupBy(review_csv):
-
-    data = pd.read_csv(review_csv)
-    data = data.groupby(['year','month'])
-    df = pd.DataFrame(data.count()['User_id'])
-    print df
-
 yelp_review_path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_review.json'
-save_path = '/Users/John/Desktop/Yelp_dataset/Review.csv'
-# Review_DataStructure_Pd(yelp_review_path, save_path)
-# GroupBy(save_path)
+yelp_business_path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.json'
+review_csv = '/Users/John/Desktop/Yelp_dataset/Review.csv'
+# Review_DataStructure_Pd(yelp_review_path, yelp_business_path, review_csv)
+df = pd.read_csv(review_csv)
 
 
-######################################
-#  通过商家类别筛选出所有的 business_id  #
-######################################
-# business_path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.json'
-# filter_category = ['Restaurants']  # 要保证所有的类别在business中均有体现
-# filter_category_string = ''
-# for i, item in enumerate(filter_category):
-#     if i != len(filter_category)-1:
-#         filter_category_string += item + '_'
-#     else:
-#         filter_category_string += item
-# business_id = Yelp_Filter_business.Filter_Business_Category(business_path, filter_category)
+# 各年月评论分布
+'''
+g = df.groupby(['year', 'month'])
+df = pd.DataFrame(g.count()['review'])
+
+fig = plt.figure()
+fig.set(alpha=0.2) # 设定图标颜色 alpha 参数
+df.review.plot(kind='bar') # 柱形图
+plt.xlabel('Date')
+plt.ylabel('Number of review')
+plt.title('The number of comments in the distribution')
+plt.show()'''
 
 
-################################
-#  通过商家id筛选出所有的 review  #
-################################
-# review_path = '/Users/John/Desktop/' + filter_category_string + '_Review.txt'
-# review = Yelp_Filter_review.Filter_Review(business_id, review_path)
+# 用户评论数量分布
+'''
+fig = plt.figure()
+fig.set(alpha=0.2) # 设定图标颜色 alpha 参数
+
+df = df['User_id'].value_counts().value_counts()
+df.plot(kind='bar')
+
+plt.xlabel('Number of review')
+plt.ylabel('Number')
+plt.title('User comment number distribution')
+plt.show()'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

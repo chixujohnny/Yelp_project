@@ -111,14 +111,10 @@ import pandas as pd
 # for item in dict:
 #     print item
 
-dict = {'a':123, 'b':234}
-if 'a' in dict:
-    print 'ok'
 
 
-a = 'qwe_asd_'
-print a[:-1]
-
-
+a = [1,2,3,4,5,6]
+print a[-3:]
+print a[-4:-1]
 
 

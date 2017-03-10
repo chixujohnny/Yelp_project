@@ -118,3 +118,6 @@ print a[-3:]
 print a[-4:-1]
 
 
+s = 'Bars,American (New),Nightlife,Lounges,Restaurants'
+if 'Restaurants' in s:
+    print 'ok'

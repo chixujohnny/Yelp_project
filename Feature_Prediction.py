@@ -45,7 +45,6 @@ yelp_review_path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/
 yelp_business_path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.json'
 review_csv = '/Users/John/Desktop/Yelp_dataset/Review.csv'
 # Review_DataStructure_Pd(yelp_review_path, yelp_business_path, review_csv)
-df = pd.read_csv(review_csv)
 
 
 # 各年月评论分布
@@ -74,6 +73,15 @@ plt.xlabel('Number of review')
 plt.ylabel('Number')
 plt.title('User comment number distribution')
 plt.show()'''
+
+
+# 按服务类别筛选review
+df = pd.read_csv(review_csv)
+df_Restaurants = df[df['category'].str.contains('Restaurants',na=False)]
+df_Nightlife = df[df['category'].str.contains('Nightlife',na=False)]
+df_Shopping = df[df['category'].str.contains('Shopping',na=False)]
+df_ChineseRestaurants = df[df['category'].str.contains(['Chinese','Restaurants'],na=False)]
+print df_ChineseRestaurants
 
 
 

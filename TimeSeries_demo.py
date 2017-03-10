@@ -9,7 +9,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+import copy
 
 dta=[10930,10318,10595,10972,7706,6756,9092,10551,9722,10913,11151,8186,6422,
 6337,11649,11652,10310,12043,7937,6476,9662,9570,9981,9331,9449,6773,6304,9355,
@@ -28,7 +29,7 @@ dta.plot(figsize=(12,8)) # 最佳尺寸(20,11.5)
 plt.show()'''
 
 
-# 使用 RF 预测一下最后5个年份的数据
+# 使用 RF/GBRT 预测一下最后5个年份的数据
 train = [10930,10318,10595,10972,7706,6756,9092,10551,9722,10913,11151,8186,6422,
 6337,11649,11652,10310,12043,7937,6476,9662,9570,9981,9331,9449,6773,6304,9355,
 10477,10148,10395,11261,8713,7299,10424,10795,11069,11602,11427,9095,7707,10767,
@@ -38,37 +39,49 @@ train = [10930,10318,10595,10972,7706,6756,9092,10551,9722,10913,11151,8186,6422
 test = [14722,
 11999,9390,13481,14795,15845,15271,14686,11054,10395]
 
-window = 50# 设置一个滑窗
-output = []
+windows = [45,47,49,50,52,55]# 设置一个滑窗
+plt.figure(figsize=(15, 11.5))
 
-for round in range(len(test)):
+for w,window in enumerate(windows):
 
-    train_X = []
-    train_y = []
+    train_new = copy.deepcopy(train)
+    output = []
 
-    for i in range(len(train)-window-1):
+    for round in range(20):
 
-        train_X.append(train[i:i+window])
-        train_y.append([train[i+window+1]])
+        train_X = []
+        train_y = []
 
-    train_X = np.array(train_X)
-    train_y = np.array(train_y)
-    model = RandomForestRegressor(random_state=0, n_estimators=2000, n_jobs=-1)
-    model.fit(train_X, train_y)
-    test_X = train[-window:]
-    predicted = model.predict(test_X)
-    print predicted
-    output.append(predicted)
-    train.append(predicted[0])
+        for i in range(len(train_new)-window-1):
 
-plt.figure(figsize=(12,8))
-plt.plot(train + test)
-plt.plot(train + output, color='r')
-plt.legend()
-plt.grid(True)
+            train_X.append(train_new[i:i+window])
+            train_y.append([train_new[i+window+1]])
+
+        train_X = np.array(train_X)
+        train_y = np.array(train_y)
+        model = GradientBoostingRegressor()  # GBRT模型
+        # model = RandomForestRegressor()  # RF模型
+        model.fit(train_X, train_y)
+        test_X = train_new[-window:]
+        predicted = model.predict(test_X)
+        print predicted[0]
+        output.append(predicted)
+        train_new.append(predicted[0])
+    if w <= 1:
+        plt.subplot2grid((3,2), (0,0+w))
+    elif w<= 3:
+        plt.subplot2grid((3,2), (1,w-2))
+    else:
+        plt.subplot2grid((3,2), (2,w-4))
+    plt.title('Time series forecasting.  Step=1, Window=' + str(window))
+    # plt.xlabel('Date')
+    plt.ylabel('Frequency')
+    plt.plot(train + output, color='r', label='forcast') #  预测值
+    plt.plot(train + test, label='original') # 原始值
+    plt.legend()
+    plt.grid(True)
+
 plt.show()
-
-
 
 
 

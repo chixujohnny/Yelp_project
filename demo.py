@@ -4,6 +4,7 @@ import json
 import chardet
 import numpy as np
 import pandas as pd
+import pandas as pd
 
 # #
 # #  json 格式的读取
@@ -113,11 +114,41 @@ import pandas as pd
 
 
 
-a = [1,2,3,4,5,6]
-print a[-3:]
-print a[-4:-1]
+# a = [1,2,3,4,5,6]
+# print a[-3:]
+# print a[-4:-1]
+#
+#
+# s = 'Bars,American (New),Nightlife,Lounges,Restaurants'
+# if 'Restaurants' in s:
+#     print 'ok'
 
 
-s = 'Bars,American (New),Nightlife,Lounges,Restaurants'
-if 'Restaurants' in s:
-    print 'ok'
+a = np.array([[1,2,3], [4,5,6]])
+print a
+print a.T
+
+
+f = open('/Users/John/Desktop/Yelp_dataset/Food/demo.csv','w')
+a = {'food':1232, 'service':1023}
+for item in a:
+    f.write(item + '\n')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

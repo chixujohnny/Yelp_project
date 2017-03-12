@@ -135,6 +135,11 @@ for item in a:
     f.write(item + '\n')
 
 
+a = [[1,2],[3,4]]
+a = np.array(a)
+np.savetxt('/Users/John/Desktop/np_save.csv', a)
+print np.loadtxt('/Users/John/Desktop/np_save.csv')
+
 
 
 

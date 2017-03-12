@@ -154,6 +154,7 @@ def Process_Emotion_Weight(Feature, Degree_Words, UserID_review_dict, BusinessID
                     Feature_Index = Feature.index(Word[0])
                     Emotion_Weight = Handle_Emotion_Weight(i, Word_Tagged, Degree_Words, window=5) # 情感权重为正值,只在乎用户是否关注它
                     Feature_Vector[Feature_Index] += Emotion_Weight
+
         All_User_Feature_Vector.append([UserID, Feature_Vector])
         # 写文件
         f.write(UserID + ', ' + str(Feature_Vector)[1:-1] + '\n')

@@ -1,17 +1,13 @@
 # coding: utf-8
 
+
 import pandas as pd
 import json
 import matplotlib.pyplot as plt
 import sys
 import nltk
 import chardet
-
-import Yelp_Filter_business
-import Yelp_Filter_review
-import Yelp_WordTag_review
-import Yelp_FeatureDig_review
-import Yelp_EmotionProcess
+import numpy as np
 
 
 ##############################
@@ -195,12 +191,128 @@ def Dig_Feature(df):
     tagged_reviews = Word_Tagged(review)
     return Filter_Feature(tagged_reviews, window=5)
 
-df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/Food/df_data.csv')
+'''
+category = 'Shopping'
+print 'category = ', category
+df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
 features_dict = Dig_Feature(df)
 print features_dict
-f = open('/Users/John/Desktop/Yelp_dataset/Food/top_50_features.csv','w')
+f = open('/Users/John/Desktop/Yelp_dataset/' + category + '/features_all.csv','w')
 for item in features_dict:
     f.write(item[0] + '\n')
+'''
+
+
+# 按年月,施加情感权重并分别制定矩阵
+def Draw_Vector(df, Degree_Words, features):
+
+    Vector = []
+    # 将features载入字典
+    Feature_Dict = {}
+    for item in features:
+        Feature_Dict[item] = 1
+
+    for y in range(2010, 2017):
+
+        for m in range(1, 13):
+
+            Feature_Vector = [0] * len(Feature_Dict)  # 创建一个全零的特征向量
+            Reviews = list( df[ (df['year']==y) & (df['month']==m) ]['review'] )
+            for Review in Reviews:
+
+                def Tagged_Review(Review):
+
+                    Review = Review.decode('utf-8') # utf-8解码
+
+                    try:
+                        sentences = nltk.sent_tokenize(Review) # 拆分成句子列表
+                        for sentence in sentences: # 标注词性
+                            word = nltk.word_tokenize(sentence)  # 对句子进行分词
+                            Word_Tagged = nltk.pos_tag(word)  # 词性标注 [('Excellent', 'JJ'), ('food', 'NN'), ('.', '.')]
+
+                    except:
+                        print 'Exception encountered.'
+
+                    return Word_Tagged
+
+                def Handle_Emotion_Weight(i, Word_Tagged, Degree_Words, window):
+
+                    DegreeWords_Most = Degree_Words[1:64]  # weight = 6
+                    DegreeWords_Very = Degree_Words[66:90]  # weight = 5
+                    DegreeWords_More = Degree_Words[68:113]  # weight = 4
+                    DegreeWords_Bit = Degree_Words[70:129]  # weight = 3
+                    DegreeWords_Just = Degree_Words[131:141]  # weight = 2
+                    DegreeWords_Over = Degree_Words[143:]  # weight = 1
+
+                    Emotion_Weight = 2  # 赋一个初始化值
+
+                    # 向右找
+                    for index in range(window):
+                        if i + index + 1 > len(Word_Tagged) - 1:  # 超出右界
+                            break
+                        elif Word_Tagged[i + index + 1][0] in Degree_Words:
+                            Degree_Word_Pos = Degree_Words.index(Word_Tagged[i + index + 1][0])
+                            if Degree_Word_Pos <= 64:
+                                Emotion_Weight = 6
+                            elif Degree_Word_Pos <= 90:
+                                Emotion_Weight = 5
+                            elif Degree_Word_Pos <= 113:
+                                Emotion_Weight = 4
+                            elif Degree_Word_Pos <= 129:
+                                Emotion_Weight = 3
+                            elif Degree_Word_Pos <= 141:
+                                Emotion_Weight = 2
+                            else:
+                                Emotion_Weight = 1
+
+                    # 向左找
+                    for index in range(window):
+                        if i - index - 1 < 0:  # 超出左界
+                            break
+                        elif Word_Tagged[i - index - 1][0] in Degree_Words:
+                            Degree_Word_Pos = Degree_Words.index(Word_Tagged[i - index - 1][0])
+                            if Degree_Word_Pos <= 64:
+                                Emotion_Weight = 6
+                            elif Degree_Word_Pos <= 90:
+                                Emotion_Weight = 5
+                            elif Degree_Word_Pos <= 113:
+                                Emotion_Weight = 4
+                            elif Degree_Word_Pos <= 129:
+                                Emotion_Weight = 3
+                            elif Degree_Word_Pos <= 141:
+                                Emotion_Weight = 2
+                            else:
+                                Emotion_Weight = 1
+
+                    return Emotion_Weight
+
+                Word_Tagged = Tagged_Review(Review)
+                for i, Word in enumerate(Word_Tagged):
+
+                    if Feature_Dict.has_key(Word[0]) == True:  # 这个词是 feature
+                        Feature_Index = features.index(Word[0])
+                        Emotion_Weight = Handle_Emotion_Weight(i, Word_Tagged, Degree_Words,window=5)  # 情感权重为正值,只在乎用户是否关注它
+                        Feature_Vector[Feature_Index] += Emotion_Weight
+
+            Vector.append(Feature_Vector)
+
+    # 矩阵要行列翻转一下,翻转后,每一行表示一个feature,每一列表示一个年月
+    return np.array(Vector).T
+
+category = 'Food'
+df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
+Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()
+for item in Degree_Words:
+    item = item.replace('\n', '')
+features = open('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv').readlines()
+vector = Draw_Vector(df, Degree_Words, features)
+np.savetxt('/Users/John/Desktop/Yelp_dataset/' + category + '/vector.csv')
+
+
+
+
+
+
 
 
 

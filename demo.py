@@ -124,28 +124,58 @@ import pandas as pd
 #     print 'ok'
 
 
-a = np.array([[1,2,3], [4,5,6]])
-print a
-print a.T
+# a = np.array([[1,2,3], [4,5,6]])
+# print a
+# print a.T
+#
+#
+# f = open('/Users/John/Desktop/Yelp_dataset/Food/demo.csv','w')
+# a = {'food':1232, 'service':1023}
+# for item in a:
+#     f.write(item + '\n')
+#
+#
+# a = [[1,2],[3,4]]
+# a = np.array(a)
+# # np.savetxt('/Users/John/Desktop/np_save.csv', a)
+# # print np.loadtxt('/Users/John/Desktop/np_save.csv')
+#
+# category = 'Food'
+# df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
+# print len(df[ (df['year']>=2010) ].index)
+#
+#
+import time
+import datetime
 
+def ISOString2Time( s ):
+    '''
+    convert a ISO format time to second
+    from:2006-04-12 16:46:40 to:23123123
+    把一个时间转化为秒
+    '''
+    d=datetime.datetime.strptime(s,"%Y-%m-%d %H:%M:%S")
+    return time.mktime(d.timetuple())
 
-f = open('/Users/John/Desktop/Yelp_dataset/Food/demo.csv','w')
-a = {'food':1232, 'service':1023}
-for item in a:
-    f.write(item + '\n')
+def Time2ISOString( s ):
+    '''
+    convert second to a ISO format time
+    from: 23123123 to: 2006-04-12 16:46:40
+    把给定的秒转化为定义的格式
+    '''
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime( float(s) ) )
 
+if __name__ == '__main__':
 
-a = [[1,2],[3,4]]
-a = np.array(a)
-np.savetxt('/Users/John/Desktop/np_save.csv', a)
-print np.loadtxt('/Users/John/Desktop/np_save.csv')
+    time_last = time.clock
+    time_now = datetime.datetime.now().second
+    print (time_now - time_last)
 
-
-
-
-
-
-
+    a="2013-08-26 16:58:00"
+    b=ISOString2Time(a)
+    print b
+    c=Time2ISOString(b)
+    print c
 
 
 

@@ -8,6 +8,8 @@ import sys
 import nltk
 import chardet
 import numpy as np
+import datetime
+import time
 
 
 ##############################
@@ -204,15 +206,44 @@ for item in features_dict:
 
 
 # 按年月,施加情感权重并分别制定矩阵
-def Draw_Vector(df, Degree_Words, features):
+def Draw_Vector(df, Degree_Words, features, start_year, end_year):
 
+    # 计算所有的评论条数(做进度条用)
+    total = len(df[ (df['year']>=2010) ].index)
+
+    # 初始化进度条参数
+    flag = 0
+    time_last = time.clock()
+    percent = 0.0
+    # 初始化矩阵
     Vector = []
     # 将features载入字典
     Feature_Dict = {}
     for item in features:
         Feature_Dict[item] = 1
 
-    for y in range(2010, 2017):
+    def View_Bar(flag, sum, time_last, percent): # time指的是上一轮迭代的时间点
+        if flag % 50.0 == 0:
+            rate = float(flag) / sum
+            rate_num = rate * 100
+            # 计算剩余时间
+            time_now = time.clock()
+            percent_difference = rate_num-percent
+            time_difference = time_now - time_last
+            rest_of_seconds = int( 100.0/percent_difference*time_difference ) # 百分比差除以时间差=剩余秒数(取整)
+            hour = rest_of_seconds / 3600
+            minute = (rest_of_seconds%3600) / 60
+            second = (rest_of_seconds%3600) % 60
+
+            print '\rPercentage: %.2f%%     |    ' % (rate_num), 'Rest of Time=  ' + str(hour) + 'h: ' + str(minute) + 'm: ' + str(second) + 's',  # \r%.2f后面跟的两个百分号会输出一个'%'
+            sys.stdout.flush() # 清屏
+
+            return time_now, rate_num
+
+        else:
+            return time_last, percent
+
+    for y in range(start_year, end_year+1): #
 
         for m in range(1, 13):
 
@@ -294,19 +325,25 @@ def Draw_Vector(df, Degree_Words, features):
                         Emotion_Weight = Handle_Emotion_Weight(i, Word_Tagged, Degree_Words,window=5)  # 情感权重为正值,只在乎用户是否关注它
                         Feature_Vector[Feature_Index] += Emotion_Weight
 
+                flag += 1
+                time_last, percent = View_Bar(flag, total, time_last, percent)
+
             Vector.append(Feature_Vector)
 
     # 矩阵要行列翻转一下,翻转后,每一行表示一个feature,每一列表示一个年月
     return np.array(Vector).T
 
-category = 'Food'
+start_time = datetime.datetime.now()
+category = 'Shopping'
+print '按年月,施加情感权重并分别制定矩阵\ncategory=', category, '\n'
 df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
 Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()
 for item in Degree_Words:
     item = item.replace('\n', '')
 features = open('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv').readlines()
-vector = Draw_Vector(df, Degree_Words, features)
-np.savetxt('/Users/John/Desktop/Yelp_dataset/' + category + '/vector.csv')
+vector = Draw_Vector(df, Degree_Words, features, start_year=2010, end_year=2016)
+np.savetxt('/Users/John/Desktop/Yelp_dataset/' + category + '/vector.csv', vector)
+print datetime.datetime.now() - start_time
 
 
 

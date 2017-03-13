@@ -15,6 +15,9 @@ import time
 ##############################
 #  更新数据结构(Dataframe格式)  #
 ##############################
+from nltk.util import pr
+
+
 def Review_DataStructure_Pd(yelp_review_path, yelp_business_path, review_csv):
 
     # 先将 business-category 存到一张哈希表中
@@ -223,14 +226,14 @@ def Draw_Vector(df, Degree_Words, features, start_year, end_year):
         Feature_Dict[item] = 1
 
     def View_Bar(flag, sum, time_last, percent): # time指的是上一轮迭代的时间点
-        if flag % 50.0 == 0:
+        if flag % 300.0 == 0:
             rate = float(flag) / sum
             rate_num = rate * 100
             # 计算剩余时间
             time_now = time.clock()
             percent_difference = rate_num-percent
             time_difference = time_now - time_last
-            rest_of_seconds = int( 100.0/percent_difference*time_difference ) # 百分比差除以时间差=剩余秒数(取整)
+            rest_of_seconds = int( (100.0-rate_num)/percent_difference*time_difference ) # 百分比差除以时间差=剩余秒数(取整)
             hour = rest_of_seconds / 3600
             minute = (rest_of_seconds%3600) / 60
             second = (rest_of_seconds%3600) % 60
@@ -249,6 +252,8 @@ def Draw_Vector(df, Degree_Words, features, start_year, end_year):
 
             Feature_Vector = [0] * len(Feature_Dict)  # 创建一个全零的特征向量
             Reviews = list( df[ (df['year']==y) & (df['month']==m) ]['review'] )
+            if len(Reviews) == 0: # 遇到没有数据的月份直接break
+                break
             for Review in Reviews:
 
                 def Tagged_Review(Review):
@@ -321,9 +326,9 @@ def Draw_Vector(df, Degree_Words, features, start_year, end_year):
                 for i, Word in enumerate(Word_Tagged):
 
                     if Feature_Dict.has_key(Word[0]) == True:  # 这个词是 feature
-                        Feature_Index = features.index(Word[0])
-                        Emotion_Weight = Handle_Emotion_Weight(i, Word_Tagged, Degree_Words,window=5)  # 情感权重为正值,只在乎用户是否关注它
-                        Feature_Vector[Feature_Index] += Emotion_Weight
+                        Feature_Index = features.index(Word[0]) # 这个 feature 在特征向量中的位置
+                        Emotion_Weight = Handle_Emotion_Weight(i, Word_Tagged, Degree_Words, window=5)  # 情感权重为正值,只在乎用户是否关注它
+                        Feature_Vector[Feature_Index] += Emotion_Weight # 在特征向量中赋值
 
                 flag += 1
                 time_last, percent = View_Bar(flag, total, time_last, percent)
@@ -333,17 +338,26 @@ def Draw_Vector(df, Degree_Words, features, start_year, end_year):
     # 矩阵要行列翻转一下,翻转后,每一行表示一个feature,每一列表示一个年月
     return np.array(Vector).T
 
-start_time = datetime.datetime.now()
-category = 'Food'
-print '按年月,施加情感权重并分别制定矩阵\ncategory=', category, '\n'
-df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
-Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()
-for item in Degree_Words:
-    item = item.replace('\n', '')
-features = open('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv').readlines()
-vector = Draw_Vector(df, Degree_Words, features, start_year=2010, end_year=2016)
-np.savetxt('/Users/John/Desktop/Yelp_dataset/' + category + '/vector.csv', vector)
-print datetime.datetime.now() - start_time
+# start_time = datetime.datetime.now()
+# category = 'Nightlife'
+# print '按年月,施加情感权重并分别制定矩阵\ncategory=', category, '\n'
+# df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
+# Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()
+# for item in Degree_Words:
+#     item = item.replace('\n', '')
+# features = open('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv').readlines()
+# features = list( pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv')['features'] )
+# vector = Draw_Vector(df, Degree_Words, features, start_year=2010, end_year=2016)
+# np.savetxt('/Users/John/Desktop/Yelp_dataset/' + category + '/vector.csv', vector)
+# print '总运行时间: ',
+# print datetime.datetime.now() - start_time
+
+
+# 看一下feature的波动情况
+
+
+# 将矩阵保存成 Dataframe 格式
+def Vector_to_Dataframe(vector, feature):
 
 
 

@@ -145,42 +145,53 @@ import pandas as pd
 # print len(df[ (df['year']>=2010) ].index)
 #
 #
-import time
-import datetime
-
-def ISOString2Time( s ):
-    '''
-    convert a ISO format time to second
-    from:2006-04-12 16:46:40 to:23123123
-    把一个时间转化为秒
-    '''
-    d=datetime.datetime.strptime(s,"%Y-%m-%d %H:%M:%S")
-    return time.mktime(d.timetuple())
-
-def Time2ISOString( s ):
-    '''
-    convert second to a ISO format time
-    from: 23123123 to: 2006-04-12 16:46:40
-    把给定的秒转化为定义的格式
-    '''
-    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime( float(s) ) )
-
-if __name__ == '__main__':
-
-    time_last = time.clock
-    time_now = datetime.datetime.now().second
-    print (time_now - time_last)
-
-    a="2013-08-26 16:58:00"
-    b=ISOString2Time(a)
-    print b
-    c=Time2ISOString(b)
-    print c
-
-
+# import time
+# import datetime
+#
+# def ISOString2Time( s ):
+#     '''
+#     convert a ISO format time to second
+#     from:2006-04-12 16:46:40 to:23123123
+#     把一个时间转化为秒
+#     '''
+#     d=datetime.datetime.strptime(s,"%Y-%m-%d %H:%M:%S")
+#     return time.mktime(d.timetuple())
+#
+# def Time2ISOString( s ):
+#     '''
+#     convert second to a ISO format time
+#     from: 23123123 to: 2006-04-12 16:46:40
+#     把给定的秒转化为定义的格式
+#     '''
+#     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime( float(s) ) )
+#
+# if __name__ == '__main__':
+#
+#     time_last = time.clock
+#     time_now = datetime.datetime.now().second
+#     print (time_now - time_last)
+#
+#     a="2013-08-26 16:58:00"
+#     b=ISOString2Time(a)
+#     print b
+#     c=Time2ISOString(b)
+#     print c
 
 
+# a = [[3,5,2,4,1],
+#      [2,6,4,3,0],
+#      [1,3,9,8,7]]
+# a = np.array(a).T
+# print a
 
+
+category = 'Food'
+features = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv', index_col=False)['features']
+print list(features)
+
+
+a = np.loadtxt('/Users/John/Desktop/Yelp_dataset/Shopping/vector.csv')
+print a[0]
 
 
 

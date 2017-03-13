@@ -334,7 +334,7 @@ def Draw_Vector(df, Degree_Words, features, start_year, end_year):
     return np.array(Vector).T
 
 start_time = datetime.datetime.now()
-category = 'Shopping'
+category = 'Food'
 print '按年月,施加情感权重并分别制定矩阵\ncategory=', category, '\n'
 df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
 Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()

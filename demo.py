@@ -4,7 +4,7 @@ import json
 import chardet
 import numpy as np
 import pandas as pd
-import pandas as pd
+import matplotlib.pyplot as plt
 
 # #
 # #  json 格式的读取
@@ -185,13 +185,46 @@ import pandas as pd
 # print a
 
 
-category = 'Food'
-features = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv', index_col=False)['features']
-print list(features)
+# category = 'Food'
+# features = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv', index_col=False)['features']
+# print list(features)
+#
+#
+# a = np.loadtxt('/Users/John/Desktop/Yelp_dataset/Shopping/vector.csv')
+# print a[0]
 
 
-a = np.loadtxt('/Users/John/Desktop/Yelp_dataset/Shopping/vector.csv')
-print a[0]
+df = pd.read_csv('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/feature挖掘准确率.csv')
+print df
+plt.figure(figsize=(15,11.5))
+df.plot(kind='bar')
+plt.title(u'Features of the mining accuracy')
+plt.xlabel(u'Category')
+plt.ylabel(u'Accuracy')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

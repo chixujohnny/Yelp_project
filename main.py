@@ -11,7 +11,7 @@ import Yelp_DrawHeatmap2
 # #  通过商家类别筛选出所有的 business_id  #
 # ######################################
 business_path = '/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.json'
-filter_category = ['Restaurants', 'Chinese']  # 要保证所有的类别在business中均有体现
+filter_category = ['Hotels & Travel']  # 要保证所有的类别在business中均有体现
 filter_category_string = ''
 for i, item in enumerate(filter_category):
     if i != len(filter_category)-1:
@@ -25,7 +25,7 @@ for i, item in enumerate(filter_category):
 # ################################
 # #  通过商家id筛选出所有的 review  #
 # ################################
-review_path = '/Users/John/Desktop/' + filter_category_string + '_Review.txt'
+# review_path = '/Users/John/Desktop/' + filter_category_string + '_Review.txt'
 # review = Yelp_Filter_review.Filter_Review(business_id, review_path)
 
 

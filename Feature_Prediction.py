@@ -323,6 +323,7 @@ def Draw_Vector(df, Degree_Words, features, start_year, end_year):
                     return Emotion_Weight
 
                 Word_Tagged = Tagged_Review(Review)
+                # print  Word_Tagged
                 for i, Word in enumerate(Word_Tagged):
 
                     if Feature_Dict.has_key(Word[0]) == True:  # 这个词是 feature
@@ -333,31 +334,41 @@ def Draw_Vector(df, Degree_Words, features, start_year, end_year):
                 flag += 1
                 time_last, percent = View_Bar(flag, total, time_last, percent)
 
+
+            print ''
+            print Feature_Vector
             Vector.append(Feature_Vector)
 
     # 矩阵要行列翻转一下,翻转后,每一行表示一个feature,每一列表示一个年月
     return np.array(Vector).T
 
-# start_time = datetime.datetime.now()
-# category = 'Nightlife'
-# print '按年月,施加情感权重并分别制定矩阵\ncategory=', category, '\n'
-# df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
-# Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()
-# for item in Degree_Words:
-#     item = item.replace('\n', '')
-# features = open('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv').readlines()
-# features = list( pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv')['features'] )
-# vector = Draw_Vector(df, Degree_Words, features, start_year=2010, end_year=2016)
-# np.savetxt('/Users/John/Desktop/Yelp_dataset/' + category + '/vector.csv', vector)
-# print '总运行时间: ',
-# print datetime.datetime.now() - start_time
+start_time = datetime.datetime.now()
+category = 'Shopping'
+print '按年月,施加情感权重并分别制定矩阵\ncategory=', category, '\n'
+df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
+Degree_Words = open('/Users/John/Desktop/yelp_dataset_challenge_academic_dataset/知网情感分析用词语集/English/Degree_Words.txt', 'r').readlines()
+for item in Degree_Words:
+    item = item.replace('\n', '')
+features = open('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv').readlines()
+features = list( pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv')['features'] )
+vector = Draw_Vector(df, Degree_Words, features, start_year=2010, end_year=2016)
+np.savetxt('/Users/John/Desktop/Yelp_dataset/' + category + '/vector.csv', vector)
+print '总运行时间: ',
+print datetime.datetime.now() - start_time
+
+
+# 因为每个月评论的数量不同
+# 需要对权重/总评论数量
+# def Optimize_Vector(df, vector):
+
+
 
 
 # 看一下feature的波动情况
 
 
 # 将矩阵保存成 Dataframe 格式
-def Vector_to_Dataframe(vector, feature):
+# def Vector_to_Dataframe(vector, feature):
 
 
 

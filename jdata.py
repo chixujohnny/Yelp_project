@@ -254,12 +254,120 @@ def Feature_Engineering(df):
 # 现在发现特征还是有点少,再搞点特征
 # ------------------------------------------- #
 
-df = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_Action_1.csv')
-df_modelData = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_modelData_剔除未发生购买行为用户.csv')
-df_modelData = df_modelData.drop(['cartNum'], axis=1)
-feature = Feature_Engineering(df)
-df_modelData = pd.merge(df_modelData, feature, how='left', on='sku_id')
-df_modelData = df_modelData.fillna(0)
-print df_modelData
-df_modelData.to_csv('/Users/John/Desktop/JData_dataset/JData_modelData_剔除未发生购买行为用户.csv', index=False)
+# df = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_Action_1.csv')
+# df_modelData = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_modelData_剔除未发生购买行为用户.csv')
+# df_modelData = df_modelData.drop(['cartNum'], axis=1)
+# feature = Feature_Engineering(df)
+# df_modelData = pd.merge(df_modelData, feature, how='left', on='sku_id')
+# df_modelData = df_modelData.fillna(0)
+# print df_modelData
+# df_modelData.to_csv('/Users/John/Desktop/JData_dataset/JData_modelData_剔除未发生购买行为用户.csv', index=False)
+
+# ------------------------------------------- #
+# 对所有origion数据merge
+# ------------------------------------------- #
+'''
+# 整理一下user数据
+df_user = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_User.csv', encoding='gbk')
+dummies_sex = pd.get_dummies(df_user['sex'], prefix='sex')
+dummies_age = pd.get_dummies(df_user['age'], prefix='age')
+dummies_level = pd.get_dummies(df_user['user_lv_cd'], prefix='level')
+df_userNew = pd.concat( [df_user, dummies_sex, dummies_age, dummies_level], axis=1 )
+df_userNew = df_userNew.drop( ['age', 'sex', 'user_lv_cd', 'user_reg_dt', ], axis=1 )
+df_userNew.columns = ['user_id', 'sex_men', 'sex_women', 'sex_unknow', 'age_unknow', 'age_<15', 'age_16-25', 'age_26-35', 'age_36-45', 'age_46-55', 'age_>56', 'level_1', 'level_2', 'level_3', 'level_4', 'level_5']
+print df_userNew
+
+# 整理一下comment数据
+# 商品的comment是每隔几天就记录一下该商品的评论数据
+# 我们只取最后一天的评论数据04-15的就可以了
+# 发现一个问题:用户行为数据中有31161个商品,商品评论信息中有46546个,并且前者并不是后者的子集
+df_comment = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_Comment.csv')
+df_comment = df_comment[ df_comment.dt=='2016-04-15' ]
+# print df_comment
+# print df_comment['sku_id'].drop_duplicates().describe() # 看看comment中有多少个商品
+# print df_action['sku_id'].drop_duplicates().describe() # 看看action中有多少个商品
+df_commentNew = df_comment.loc[:, ['sku_id','comment_num','bad_comment_rate']] # 对评论数据只取这三个就够了
+scaler = preprocessing.StandardScaler() # 数据规范化
+comment_scale_param = scaler.fit(df_commentNew['comment_num'])
+df_commentNew['comment_num'] = scaler.fit_transform(df_commentNew['comment_num'], comment_scale_param)
+print df_commentNew
+
+# 上面把user和comment数据整理完了,现在merge一下就行了
+df_action = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_Action_1.csv')
+print df_action
+df_action = pd.merge(df_action, df_userNew, how='left', on='user_id')
+df_action = pd.merge(df_action, df_commentNew, how='left', on='sku_id')
+df_action = df_action.drop( ['model_id'], axis=1 )
+df_action.to_csv('/Users/John/Desktop/JData_dataset/JData_Action_1.csv', index=False)'''
+
+# ------------------------------------------- #
+# JData_Action_1中剔除从未发生购买行为的用户
+# ------------------------------------------- #
+
+# df = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_Action_1.csv')
+# df_userBuy = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_发生过购物行为的用户.csv')
+# df = pd.merge(df_userBuy, df, how='left', on='user_id')
+# df.to_csv('/Users/John/Desktop/JData_dataset/JData_Action_2.csv', index=False)
+
+# ------------------------------------------- #
+# JData_Action_2中剔除从没被买过的商品
+# ------------------------------------------- #
+
+# df = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_Action_2.csv')
+# df_skuBuy = df.sku_id[ df.type==4 ].value_counts()
+# print df_skuBuy
+# df_skuBuy = df_skuBuy.to_frame()
+# print df_skuBuy
+# df_skuBuy['sku_id'] = df_skuBuy.index
+# print df_skuBuy
+# df_skuBuy.to_csv('/Users/John/Desktop/JData_dataset/JData_被买过的商品.csv', index=False)
+#
+# df_skuBuy = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_被买过的商品.csv')
+# print df_skuBuy
+# df = pd.merge(df_skuBuy, df, how='left', on='sku_id')
+# df.to_csv('/Users/John/Desktop/JData_dataset/JData_Action_3.csv', index=False)
+
+# ------------------------------------------- #
+# 再搞一下人工规则
+# ------------------------------------------- #
+
+# df = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_Action_413-414.csv')
+df = pd.read_csv('/Users/John/Desktop/JData_dataset/JData_Action_3.csv')
+
+# 413-414加入购物车的user-sku
+df_cart = df[df.month==4][df.day>=10][df.day<=14][df.type==2]
+df_cart = df_cart.loc[:,['user_id','sku_id']].drop_duplicates().sort_values('user_id')
+print df_cart
+
+# 413-414购买的user-sku
+df_buy = df[df.month==4][df.day>=10][df.day<=14][df.type==4]
+df_buy =df_buy.loc[:,['user_id','sku_id']].drop_duplicates().sort_values('user_id')
+print df_buy
+
+# 413-414删除购物车user_sku
+df_delcart = df[df.month==4][df.day>=10][df.day<=14][df.type==3]
+df_delcart = df_delcart.loc[:,['user_id','sku_id']].drop_duplicates().sort_values('user_id')
+print df_delcart
+
+# df_cart与df_buy交集
+df_cartbuy = pd.merge(df_cart, df_buy, how='inner', on=['user_id','sku_id']).drop_duplicates().sort_values('user_id')
+print df_cartbuy
+# df_cart与df_delcart交集
+df_cartdel = pd.merge(df_cart, df_delcart, how='inner', on=['user_id','sku_id']).drop_duplicates().sort_values('user_id')
+print df_cartdel
+
+# 差集
+df_cart = np.array(df_cart)
+df_cartbuy = np.array(df_cartbuy)
+df_cartdel = np.array(df_cartdel)
+df_cartNew = []
+
+for item in df_cart:
+    if (item not in df_cartbuy) or (item not in df_cartdel):
+        df_cartNew.append(item)
+
+df_cartNew = pd.DataFrame(df_cartNew, columns=['user_id','sku_id']).drop_duplicates('user_id').sort_values('user_id')
+print df_cartNew
+df_cartNew.to_csv('/Users/John/Desktop/JData_dataset/JData_Artificial_Rules_0.csv',index=False)
+
 

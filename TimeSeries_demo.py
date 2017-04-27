@@ -39,7 +39,7 @@ train = [10930,10318,10595,10972,7706,6756,9092,10551,9722,10913,11151,8186,6422
 test = [14722,
 11999,9390,13481,14795,15845,15271,14686,11054,10395]
 
-windows = [45,47,49,50,52,55]# 设置一个滑窗
+windows = [45,47,49,50,52,55] # 设置一个滑窗
 plt.figure(figsize=(15, 11.5))
 
 for w,window in enumerate(windows):
@@ -47,7 +47,7 @@ for w,window in enumerate(windows):
     train_new = copy.deepcopy(train)
     output = []
 
-    for round in range(20):
+    for round in range(len(test)): # 预测多少年
 
         train_X = []
         train_y = []
@@ -67,12 +67,14 @@ for w,window in enumerate(windows):
         print predicted[0]
         output.append(predicted)
         train_new.append(predicted[0])
+
     if w <= 1:
         plt.subplot2grid((3,2), (0,0+w))
     elif w<= 3:
         plt.subplot2grid((3,2), (1,w-2))
     else:
         plt.subplot2grid((3,2), (2,w-4))
+
     plt.title('Time series forecasting.  Step=1, Window=' + str(window))
     # plt.xlabel('Date')
     plt.ylabel('Frequency')

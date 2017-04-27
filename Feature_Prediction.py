@@ -10,6 +10,10 @@ import chardet
 import numpy as np
 import datetime
 import time
+from scipy import interpolate
+from sklearn import preprocessing
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+import copy
 
 
 ##############################
@@ -357,19 +361,286 @@ def Draw_Vector(df, Degree_Words, features, start_year, end_year):
 # print datetime.datetime.now() - start_time
 
 
+# ------------------------------------------- #
 # 因为每个月评论的数量不同
 # 需要对权重/总评论数量
-# def Optimize_Vector(df, vector):
+# ------------------------------------------- #
+
+# 生成日期文件2010.1~2016.7
+# f = open('/Users/John/Desktop/Yelp_dataset/date.csv', 'w')
+# f.write('date\n')
+# for year in range(2010,2017):
+#     for month in range(1,13):
+#         if year==2016 and month==8: # 只记录到2016-07
+#             break
+#         elif month<10:
+#             f.write(str(year) + '-0' + str(month) + '\n')
+#         else:
+#             f.write(str(year) + '-' + str(month) + '\n')
+
+# df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data.csv')
+
+# year_month = []
+# year = list(df['year'])
+# month = list(df['month'])
+# for i in range(len(year)):
+#     try:
+#         if len(str(int(month[i]))) == 1: # 月份数为个数
+#             year_month.append(str(int(year[i])) + '-' + '0' + str(int(month[i])))
+#         else:
+#             year_month.append(str(int(year[i])) + '-' + str(int(month[i])))
+#     except:
+#         year_month.append('0000-0')
+# df_year_month = pd.DataFrame(year_month, columns=['year_month'])
+# df.insert(2,'year_month',df_year_month['year_month'])
+# df = df[ df.year_month != '0000-0' ]
+# df = df.drop('day', axis=1)
+# df.to_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_data1.csv', index=False)
+# print df
+
+# 使用groupby创建多重索引计算count
+'''
+g = df.groupby(['year','month'])
+review_count = pd.DataFrame(g.count()['review'])
+print review_count.index'''
+
+# 每个月的评论数量
+# review_count = df['year_month'].value_counts()
+# df_review_count = pd.DataFrame( np.array([review_count.index,review_count]).T, columns=['year_month','count'] ).sort_values('year_month',ascending=False)
+# df_review_count = df_review_count[ df_review_count.year_month>='2010-01' ]
+# col = sorted(list(df_review_count['year_month']), reverse=False); print col
+# item = list(np.array(list(df_review_count['count'])).T)
+# item.reverse()
+# item = [item]; print item
+# df_review_count = pd.DataFrame(item, columns=col)
+# print df_review_count
+'''
+category = 'Shopping'
+
+# 在np.array矩阵中加入column形成dataframe
+df_features = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv')
+
+df_matrix = np.loadtxt('/Users/John/Desktop/Yelp_dataset/' + category + '/vector.csv')
+df_matrix = pd.DataFrame(df_matrix, index=df_features['features'])
+
+df_date = pd.read_csv('/Users/John/Desktop/Yelp_dataset/date.csv')
+date = list(df_date['date'])
+df_matrix.columns = date
+df_matrix.to_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_matrix.csv', index=True)
+
+# 读取一下df格式的矩阵
+# df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_matrix.csv', index_col=0); print df_matrix
+# array = df_matrix.as_matrix()
+# count = df_review_count.as_matrix()[0]; print count
+# arrayNew = []; print array
+#
+# for rowNum in xrange(len(array)):
+#     row = []
+#     for colNum in xrange(len(array[0])):
+#         row.append(array[rowNum][colNum]/count[colNum])
+#     arrayNew.append(row)
+# df_matrix = pd.DataFrame(arrayNew, index=df_matrix.index, columns=list(df_matrix.columns))
+# df_matrix.to_csv('/Users/John/Desktop/Yelp_dataset/Food/df_matrix按评论总数取平均.csv'); print df_matrix
+
+# 将行列转置一下,便于后面的作图
+# df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/Food/df_matrix按评论总数取平均.csv',index_col=0)
+# df_matrix = pd.DataFrame(df_matrix.as_matrix().T, index=list(df_matrix.columns), columns=df_matrix.index)
+# df_matrix.to_csv('/Users/John/Desktop/Yelp_dataset/Food/df_matrix按评论总数取平均.csv')
+
+df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_matrix.csv', index_col=0)
+df_matrix = pd.DataFrame(df_matrix.as_matrix().T, index=list(df_matrix.columns), columns=df_matrix.index)
+df_matrix.to_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_matrix.csv')
+print df_matrix
 
 
+# ------------------------------------------- #
+# 简单看一下波动情况
+# ------------------------------------------- #
+# df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/Food/df_matrix按评论总数取平均.csv')
+# df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/Food/df_matrix.csv',index_col=0)
+# df_matrix = df_matrix.drop(['2016-07'])
+# print df_matrix
+# plt.figure(figsize=(15, 11.5))
+# plt.title('Value Features of Volatility')
+# df_matrix['coffee'].plot(marker='o') # 参数marker表示要在弯折处用'o'标记
+# plt.grid(True) # 是否开启网格
+# plt.show()
 
 
+# ------------------------------------------- #
+# 发现有些部分数据抖动的非常厉害
+# 使用正则化预处理一下
+# 正则化的处理结果不怎么样
+# ------------------------------------------- #
+'''
+# df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/Food/df_matrix.csv',index_col=0)
+# df_matrix = df_matrix.drop(['2016-07']) # 7月的数据不完整,去掉
+# df_matrix_normalized = preprocessing.normalize(df_matrix, 'l1')
+# df_matrix_normalized = pd.DataFrame(df_matrix_normalized, index=df_matrix.index, columns=list(df_matrix.columns)); print df_matrix_normalized
+# plt/.figure(figsize=(15, 11.5))
+# plt.title('Value Features of Volatility')
+# df_matrix_normalized['coffee'].plot(marker='o') # 参数marker表示要在弯折处用'o'标记
+# plt.grid(True) # 是否开启网格
+# plt.show()
+'''
 
-# 看一下feature的波动情况
+
+# ------------------------------------------- #
+# GBRT滑窗法预测
+# ------------------------------------------- #
+# 训练model     训练集  测试集   滑窗
+def Train_Model(train, test, window):
+
+    train_new = copy.deepcopy(train)
+    output = []
+
+    for round in range(len(test)): # 预测多少年
+
+        train_X = []
+        train_y = []
+
+        for i in range(len(train_new)-window-1):
+
+            train_X.append(train_new[i:i+window])
+            train_y.append([train_new[i+window+1]])
+
+        train_X = np.array(train_X)
+        train_y = np.array(train_y)
+        # model = GradientBoostingRegressor()  # GBRT模型
+        model = RandomForestRegressor(random_state=0)  # RF模型
+        model.fit(train_X, train_y)
+        test_X = train_new[-window:]
+        predicted = model.predict(test_X)
+        # print predicted[0]
+        output.append(predicted[0])
+        train_new.append(predicted[0])
+
+    # plt.title('Value Features of Volatility Forecasting.  Step=1, Window=' + str(window))
+    # # plt.xlabel('Date')
+    # plt.ylabel('Frequency')
+    # plt.plot(train + output, color='r', label='forcast')  # 预测值
+    # plt.plot(train + test, label='original')  # 原始值
+    # plt.legend()
+    # plt.grid(True)
+    # plt.show()
+
+    return output
 
 
-# 将矩阵保存成 Dataframe 格式
-# def Vector_to_Dataframe(vector, feature):
+# ------------------------------------------- #
+# 计算 loss
+# ------------------------------------------- #
+#        测试集  预测值
+def Loss(test, predict):
+
+    # L:loss
+    # T:预测的总月份数
+    # Ct:未来的第t个月,预测值
+    # Ctg:实际值
+
+    T = len(test) # 预测的总月份数
+    L = 0 # loss初始化
+    for i in range(len(test)):
+        L = L + abs( (predict[i]-test[i]) / (predict[i]+test[i]) )
+
+    L = L / float(T)
+
+    return L
+
+
+# ------------------------------------------- #
+# 通过 loss 值寻找最佳window
+# ------------------------------------------- #
+# 训练集、测试集分割,选择后半年的数据作为测试集
+df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_matrix.csv',index_col=0)
+df_matrix = df_matrix.drop(['2016-07']) # 7月的数据不完整,去掉
+print df_matrix
+f = open('/Users/John/Desktop/Yelp_dataset/'+category+'/df_Loss.csv', 'w')
+f.write('feature,window,loss\n')
+
+for feature in df_matrix:
+
+    train = list( df_matrix.iloc[:-6,:][feature] );
+    test = list( df_matrix.iloc[-6:,:][feature] );
+
+    L = 0
+    W = 0
+    for window in range(10, 60):
+
+        predict = Train_Model(train, test, window=window) # list,存放了未来几个月的预测结果
+        loss = Loss(test, predict)
+        if loss > L:
+            L = loss
+            W = window
+
+    f.write(feature + ',' + str(W) + ',' + str(L) + '\n')
+
+
+# ------------------------------------------- #
+# loss值结果图
+# ------------------------------------------- #
+df_loss = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_Loss.csv',index_col=0)
+df_loss = df_loss.drop(['window'],axis=1)
+# plt.figure(figsize=(15, 11.5))
+# plt.title('The experimental results')
+df_loss.plot(kind='bar')
+plt.grid(True) # 是否开启网格
+plt.show()
+'''
+
+
+# ------------------------------------------- #
+# 算一下平均loss值
+# ------------------------------------------- #
+# category = 'Shopping'
+# df_loss = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_Loss.csv',index_col=0)
+# print df_loss['loss'].describe()
+
+
+# ------------------------------------------- #
+# 十大热门餐厅平均loss值
+# ------------------------------------------- #
+# b_id = np.array(['5UmKMjUEUNdYWqANhGckJw','yXuao0pFz1AxB21vJjDf5w','gmBc0qN_LtGbZAjTtHWZg','6ilJq_05xRgek_8qUp36-g','McikHxxEqZ2X0joaRNKlaw','eT5Ck7Gg1dBJobca9VFovw','_jsJFrAmFVPRio0eEVExbA','JX2gDf2uy2UGuKPpcKT-IA','7wT532x2Qz5Hw9BqtBapqw','oMoSc4tTay_THqF4Ke_WrQ']).T
+# loss = np.array([0.091,0.088,0.096,0.121,0.117,0.103,0.131,0.095,0.107,0.119]).T
+# df = pd.DataFrame(loss, index=b_id, columns=['loss'])
+# df.plot(kind='bar')
+# plt.grid(True) # 是否开启网格
+# plt.show()
+
+
+# ------------------------------------------- #
+# VFAMine precision
+# ------------------------------------------- #
+# ind = ['Chinese-Restaurant','Home-Services','Hotel-Travel','Nightlife','Shopping']
+# pre = np.array( [0.913, 0.921, 0.886, 0.854, 0.897] )
+# df = pd.DataFrame(pre, index=ind, columns=['precision'])
+# df.plot(kind='bar', rot=30)
+# plt.grid(True) # 是否开启网格
+# plt.show()
+
+
+# ------------------------------------------- #
+# MICCA precision
+# ------------------------------------------- #
+# pre = np.array( [[88.21, 86.77, 82.59, 83.60, 84.34],
+#                  [76.39, 77.25, 73.02, 68.76, 70.01],
+#                  [34.98, 29.31, 40.30, 22.50, 29.81],
+#                  [65.88, 68.05, 59.97, 57.26, 63.31],
+#                  [68.96, 70.23, 64.58, 61.09, 65.77]] )
+
+
+# ------------------------------------------- #
+# 三大行业loss箱须图
+# ------------------------------------------- #
+loss = []
+category = ['Food','Nightlife','Shopping']
+for cate in category:
+    df_loss = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + cate + '/df_Loss.csv')
+    loss.append(df_loss['loss'])
+
+plt.boxplot(loss)
+plt.show()
+
 
 
 

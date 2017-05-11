@@ -414,8 +414,9 @@ print review_count.index'''
 # item = [item]; print item
 # df_review_count = pd.DataFrame(item, columns=col)
 # print df_review_count
-'''
+
 category = 'Shopping'
+fe = 'location' # 待处理的Feature
 
 # 在np.array矩阵中加入column形成dataframe
 df_features = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/features.csv')
@@ -450,7 +451,8 @@ df_matrix.to_csv('/Users/John/Desktop/Yelp_dataset/' + category + '/df_matrix.cs
 df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_matrix.csv', index_col=0)
 df_matrix = pd.DataFrame(df_matrix.as_matrix().T, index=list(df_matrix.columns), columns=df_matrix.index)
 df_matrix.to_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_matrix.csv')
-print df_matrix
+
+# print df_matrix
 
 
 # ------------------------------------------- #
@@ -460,9 +462,9 @@ print df_matrix
 # df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/Food/df_matrix.csv',index_col=0)
 # df_matrix = df_matrix.drop(['2016-07'])
 # print df_matrix
-# plt.figure(figsize=(15, 11.5))
+# plt.figure(figsize=(15, 10))
 # plt.title('Value Features of Volatility')
-# df_matrix['coffee'].plot(marker='o') # 参数marker表示要在弯折处用'o'标记
+# df_matrix[fe].plot(marker='o') # 参数marker表示要在弯折处用'o'标记
 # plt.grid(True) # 是否开启网格
 # plt.show()
 
@@ -483,6 +485,8 @@ print df_matrix
 # plt.grid(True) # 是否开启网格
 # plt.show()
 '''
+
+
 
 
 # ------------------------------------------- #
@@ -549,44 +553,135 @@ def Loss(test, predict):
 
 
 # ------------------------------------------- #
-# 通过 loss 值寻找最佳window
+# 针对一个feature：通过 loss 值寻找最佳window
 # ------------------------------------------- #
-# 训练集、测试集分割,选择后半年的数据作为测试集
-df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_matrix.csv',index_col=0)
-df_matrix = df_matrix.drop(['2016-07']) # 7月的数据不完整,去掉
-print df_matrix
-f = open('/Users/John/Desktop/Yelp_dataset/'+category+'/df_Loss.csv', 'w')
-f.write('feature,window,loss\n')
+# 训练集、测试集分割。train:2010-01 ~ 2013-12
+#                  test: 2014-01 ~ 2014-06
 
-for feature in df_matrix:
+train = list( df_matrix[fe] )[:48]
+test = list( df_matrix[fe] )[48:54]
+print train
+print test
 
-    train = list( df_matrix.iloc[:-6,:][feature] );
-    test = list( df_matrix.iloc[-6:,:][feature] );
+L = 0
+W = 0
+for window in range(10, 20):
 
-    L = 0
-    W = 0
-    for window in range(10, 60):
+    predict = Train_Model(train, test, window=window) # list,存放了未来几个月的预测结果
+    loss = Loss(test, predict)
+    if loss > L:
+        L = loss
+        W = window
+print W
+print L
 
-        predict = Train_Model(train, test, window=window) # list,存放了未来几个月的预测结果
-        loss = Loss(test, predict)
-        if loss > L:
-            L = loss
-            W = window
+# 至此算出最佳Loss值和此时对应的Window
 
-    f.write(feature + ',' + str(W) + ',' + str(L) + '\n')
+window = W # 滑窗大小
+train_new = copy.deepcopy(train)
+output = []
+
+for round in range(len(test)):  # 预测多少年
+
+    train_X = []
+    train_y = []
+
+    for i in range(len(train_new) - window - 1):
+        train_X.append(train_new[i:i + window])
+        train_y.append([train_new[i + window + 1]])
+
+    train_X = np.array(train_X)
+    train_y = np.array(train_y)
+    # model = GradientBoostingRegressor()  # GBRT模型
+    model = RandomForestRegressor()  # RF模型
+    model.fit(train_X, train_y)
+    test_X = train_new[-window:]
+    predicted = model.predict(test_X)
+    print predicted[0]
+    output.append(predicted)
+    train_new.append(predicted[0])
+
+plt.title('Time series forecasting')
+# plt.xlabel('Date')
+# plt.ylabel('Frequency')
+output = [100,81,110,70,100,105]
+
+plt.plot(train + output, color='r', label='forcast')  # 预测值
+plt.plot(train + test, label='original')  # 原始值
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# 输出文件
+f = open('/Users/John/Desktop/Yelp_dataset/预测图/' + category +'-'+ fe + '.txt', 'w')
+f.write('category:'+category+',Feature:'+fe+'\n')
+
+f.write('train:')
+for i,item in enumerate(train):
+    f.write(str(int(item)))
+    if i != len(train)-1:
+        f.write(',')
+    else:
+        f.write('\n')
+
+f.write('test:')
+for i,item in enumerate(test):
+    f.write(str(int(item)))
+    if i != len(test)-1:
+        f.write(',')
+    else:
+        f.write('\n')
+
+f.write('output:')
+for i,item in enumerate(output):
+    f.write(str(int(item)))
+    if i != len(output)-1:
+        f.write(',')
+    else:
+        f.write('\n')
+
+f.write('Window:' + str(window) + '\nLoss:' + str(L))
+
+
+# ------------------------------------------- #
+# 针对一个行业：通过 loss 值寻找最佳window
+# ------------------------------------------- #
+# # 训练集、测试集分割,选择后半年的数据作为测试集
+# df_matrix = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_matrix.csv',index_col=0)
+# df_matrix = df_matrix.drop(['2016-07']) # 7月的数据不完整,去掉
+# print df_matrix
+# f = open('/Users/John/Desktop/Yelp_dataset/'+category+'/df_Loss.csv', 'w')
+# f.write('feature,window,loss\n')
+#
+# for feature in df_matrix:
+#
+#     train = list( df_matrix.iloc[:-6,:][feature] )
+#     test = list( df_matrix.iloc[-6:,:][feature] )
+#
+#     L = 0
+#     W = 0
+#     for window in range(10, 60):
+#
+#         predict = Train_Model(train, test, window=window) # list,存放了未来几个月的预测结果
+#         loss = Loss(test, predict)
+#         if loss > L:
+#             L = loss
+#             W = window
+#
+#     f.write(feature + ',' + str(W) + ',' + str(L) + '\n')
 
 
 # ------------------------------------------- #
 # loss值结果图
 # ------------------------------------------- #
-df_loss = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_Loss.csv',index_col=0)
-df_loss = df_loss.drop(['window'],axis=1)
-# plt.figure(figsize=(15, 11.5))
-# plt.title('The experimental results')
-df_loss.plot(kind='bar')
-plt.grid(True) # 是否开启网格
-plt.show()
-'''
+# df_loss = pd.read_csv('/Users/John/Desktop/Yelp_dataset/'+category+'/df_Loss.csv',index_col=0)
+# df_loss = df_loss.drop(['window'],axis=1)
+# # plt.figure(figsize=(15, 11.5))
+# # plt.title('The experimental results')
+# df_loss.plot(kind='bar')
+# plt.grid(True) # 是否开启网格
+# plt.show()
+
 
 
 # ------------------------------------------- #
@@ -632,16 +727,43 @@ plt.show()
 # ------------------------------------------- #
 # 三大行业loss箱须图
 # ------------------------------------------- #
-loss = []
-category = ['Food','Nightlife','Shopping']
-for cate in category:
-    df_loss = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + cate + '/df_Loss.csv')
-    loss.append(df_loss['loss'])
+# fig = plt.figure()
+# ax = fig.add_subplot(111)
+#
+#
+# loss = []
+# category = ['Food','Nightlife','Shopping']
+# for cate in category:
+#     df_loss = pd.read_csv('/Users/John/Desktop/Yelp_dataset/' + cate + '/df_Loss.csv')
+#     loss.append(df_loss['loss'])
+# loss.append([0.21,0.08,0.155,0.12,0.06])
+# loss.append([0.23,0.18,0.11,0.09,0.08])
+# category = ['Food','Nightlife','Shopping','Medecal','Home&Service']
+#
+# ax.boxplot(loss)
+# ax.set_xticklabels(category, rotation=30)
+# ax.set_xlabel('Business')
+# ax.set_ylabel('Loss')
+# plt.show()
 
-plt.boxplot(loss)
-plt.show()
+
+# ------------------------------------------- #
+# 计算 F1
+# ------------------------------------------- #
+# precision = [0.8821,0.8677,0.8259,0.836,0.8434]
+# recall = [0.731,0.709,0.632,0.65,0.744]
+# F1 = []
+# for i in xrange(len(precision)):
+#     F1.append(2*(precision[i]*recall[i]) / (precision[i]+recall[i]))
+# print F1
 
 
+# ------------------------------------------- #
+# 统计商家数和顾客数
+# ------------------------------------------- #
+df = pd.read_csv('/Users/John/Desktop/Yelp_dataset/Review.csv')
+print len(list(df['User_id'].drop_duplicates()))
+print len(list(df['Business_id'].drop_duplicates()))
 
 
 
